@@ -21,16 +21,31 @@ class products extends yqlQuery{
 	}
 
 	public function submarino(){
-		$q = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20html%20where%20url%3D%22http%3A%2F%2Fwww.submarino.com.br%2Fbusca%3Fq%3D".$this->term."%26dep%3D%2B%26x%3D0%26y%3D0%22%20%20and%20xpath%3D'%2F%2Fdiv%5B%40class%3D%22product%20hslice%22%5D'&format=xml&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys";
-		echo $q;
+		$q = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20html%20where%20url%3D%22http%3A%2F%2Fwww.submarino.com.br%2Fbusca%3Fq%3D".$this->term."%26dep%3D%2B%26x%3D0%26y%3D0%22%20%20and%20xpath%3D'%2F%2Fdiv%5B%40class%3D%22product%20hslice%22%5D'%20&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
 		$this->set($q);
-		return $this->get();
+		
+		$result = $this->get();
+		foreach($result->query->results->div as $k=>$prod){
+			$this->arrProduct['submarino'][$k]['title'] = $prod->a[2]->img->alt;
+			$this->arrProduct['submarino'][$k]['link'] = $prod->a[2]->href;
+			$this->arrProduct['submarino'][$k]['image'] = $prod->a[2]->img->src;
+			$this->arrProduct['submarino'][$k]['price'] = (is_array($prod->div->span) ? (empty($prod->div->span[1]->strong) ? $prod->div->span[0]->strong : $prod->div->span[1]->strong) : $prod->div->span->strong);
+		}	
+		return $this->arrProduct;
 	}
 	
 	public function americanas(){
-		$q = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20html%20where%20url%3D%22http%3A%2F%2Fwww.americanas.com.br%2Fbusca%2F".$this->term."%22%20%20and%20xpath%3D'%2F%2Fdiv%5B%40class%3D%22hslice%22%5D'%20&format=xml&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys";
+		$q = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20html%20where%20url%3D%22http%3A%2F%2Fwww.americanas.com.br%2Fbusca%2F".$this->term."%22%20%20and%20xpath%3D'%2F%2Fdiv%5B%40class%3D%22hslice%22%5D'%20&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
 		$this->set($q);
-		return $this->get();
+		$result = $this->get();
+		
+		foreach($result->query->results->div as $k=>$prod){
+			$this->arrProduct['americanas'][$k]['title'] = $prod->div[1]->h3->a->content;
+			$this->arrProduct['americanas'][$k]['link'] = $prod->div[0]->a->href;
+			$this->arrProduct['americanas'][$k]['image'] = $prod->div[0]->a->img->src;
+			$this->arrProduct['americanas'][$k]['price'] = (empty($prod->div[1]->div[1]->a->span->content) ? $prod->div[1]->div[1]->a->content : $prod->div[1]->div[1]->a->span->content);
+		}	
+		return $this->arrProduct;
 	}
 	
 	public function magazineLuiza(){
@@ -57,10 +72,10 @@ class products extends yqlQuery{
 		
 		$result = $this->get();
 		foreach($result->query->results->table->tr->td->table as $k=>$prod){
-		var_dump($prod->tr[1]->td[1]);
-			$this->arrProduct[$k]['title'] = str_replace("\n","",$prod->tr[1]->td[1]->span->a->strong);
-			$this->arrProduct[$k]['link'] = $prod->tr[1]->td[1]->span->a->href;
-			$this->arrProduct[$k]['image'] = $prod->tr[1]->td[0]->table->tr[1]->td->a->img->src;
+			$this->arrProduct['livrariaCultura'][$k]['title'] = str_replace("\n","",$prod->tr[1]->td[1]->span->a->strong);
+			$this->arrProduct['livrariaCultura'][$k]['link'] = $prod->tr[1]->td[1]->span->a->href;
+			$this->arrProduct['livrariaCultura'][$k]['image'] = $prod->tr[1]->td[0]->table->tr[1]->td->a->img->src;
+			$this->arrProduct['livrariaCultura'][$k]['price'] = "<script>".$prod->tr[1]->td[1]->table->tr->td->table->tr->td->table->tr[0]->td->p->strong->script->content."</script>";;
 		}	
 		return $this->arrProduct;
 	}
